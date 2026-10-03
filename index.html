@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Trends Go AI</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<style>
+:root{--bg:#0A0A10;--surface:rgba(255,255,255,.08);--surface2:rgba(255,255,255,.14);--line:rgba(255,255,255,.18);--text:#F4F4F6;--muted:#A3A3B2;--soft:#C9C9D4;--accent:#C8FF3D;--on-accent:#10130A}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{color:var(--text);font-family:'Golos Text',system-ui,sans-serif;font-size:15px;line-height:1.35;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;text-align:left}
+#app{position:relative;height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column}
+/* Цветной фон: без него стеклу нечего размывать */
+body{background:transparent}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+ radial-gradient(60% 40% at 12% 8%,rgba(120,90,255,.55),transparent 70%),
+ radial-gradient(55% 38% at 95% 30%,rgba(255,80,150,.40),transparent 70%),
+ radial-gradient(70% 45% at 20% 95%,rgba(40,200,170,.38),transparent 70%),
+ radial-gradient(50% 35% at 90% 85%,rgba(255,170,60,.28),transparent 70%),var(--bg)}
+/* Стекло: полупрозрачная заливка, размытие фона, светлая кромка сверху */
+.pill,.chip,.card,.tags span,.need,.slot,.tip,.balance,.pack,.list,.amount,.ghost,.dashed,.bar,.tabs,.toast{
+ -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.04),0 8px 24px rgba(0,0,0,.22)}
+.card,.tags span,.need,.tip,.balance,.list{border:1px solid var(--line)}
+.scroll:has(+ .tabs){padding-bottom:112px}
+.scroll{flex:1;min-height:0;overflow-y:auto;padding:20px 16px 24px;display:flex;flex-direction:column;gap:18px}
+.center{flex:1;min-height:0;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
+.display{font-family:'Unbounded',sans-serif;font-weight:500;letter-spacing:-.02em;line-height:1.2}
+.muted{color:var(--muted)}
+.row{display:flex;align-items:center}
+.between{justify-content:space-between}
+.pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:22px;background:var(--surface);font-weight:600}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:0 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:var(--surface);font-weight:600}
+.chip.on{background:rgba(255,255,255,.88);color:#0A0A10;border-color:rgba(255,255,255,.9)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:10px;padding-bottom:12px;border-radius:24px;background:var(--surface);overflow:hidden}
+.tile{position:relative;height:216px;display:flex;align-items:center;justify-content:center}
+.badge{position:absolute;left:8px;padding:4px 9px;border-radius:10px;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.16);font-size:12px;font-weight:600}
+.badge.top{top:8px}.badge.bottom{bottom:8px;color:var(--soft);font-weight:400;font-size:11px}
+.card h3{margin:0;padding:0 12px;font-size:15px;font-weight:600;line-height:1.25;min-height:38px}
+.meta{padding:0 12px;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.meta b{color:var(--text)}
+.back{align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 4px;font-weight:600}
+.hero{position:relative;height:400px;flex:none;border-radius:22px;display:flex;align-items:center;justify-content:center}
+.tags{display:flex;gap:8px;flex-wrap:wrap;color:var(--soft);font-size:13px}
+.tags span{padding:6px 10px;border-radius:10px;background:var(--surface)}
+.label{color:var(--muted);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.need{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--surface)}
+.num{flex:none;width:32px;height:32px;border-radius:16px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700}
+.bar{flex:none;padding:12px 16px calc(20px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(10,10,16,.45);display:flex;flex-direction:column;gap:10px}
+.cta{width:100%;min-height:56px;border-radius:28px;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 24px rgba(200,255,61,.22);background:var(--accent);color:var(--on-accent);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta.off{background:var(--surface2);color:var(--muted);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.ghost{width:100%;min-height:56px;border:1px solid var(--line);border-radius:28px;background:var(--surface);font-weight:600;font-size:16px;text-align:center}
+.slot{display:flex;align-items:center;gap:14px;min-height:104px;padding:14px;border:2px dashed #4A4A5A;border-radius:18px;background:var(--surface);width:100%}
+.slot.on{border:2px solid var(--accent)}
+.thumb{flex:none;width:72px;height:72px;border-radius:14px;background:var(--surface2) center/cover;display:flex;align-items:center;justify-content:center}
+.tip{padding:12px 14px;border-radius:14px;background:var(--surface);color:var(--soft);font-size:14px}
+.progress{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;width:100%}
+.progress i{display:block;height:100%;border-radius:4px;background:var(--accent);transition:width .15s linear}
+.poster{width:150px;height:266px;border-radius:20px;display:flex;align-items:flex-end;overflow:hidden}
+.poster i{display:block;width:100%;background:var(--bg);opacity:.45;transition:height .15s linear}
+.ok{width:88px;height:88px;border-radius:44px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.dl{flex:none;width:44px;height:44px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center}
+.dashed{min-height:56px;border:1px dashed #4A4A5A;border-radius:18px;font-weight:600;text-align:center}
+.avatar{width:56px;height:56px;border-radius:28px;background:var(--surface2);display:flex;align-items:center;justify-content:center}
+.balance{padding:18px;border-radius:22px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.pack{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;padding:0 16px;border:1px solid var(--line);border-radius:18px;background:var(--surface);width:100%}
+.pack.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.radio{flex:none;width:22px;height:22px;border-radius:11px;border:2px solid #5A5A6A;display:flex;align-items:center;justify-content:center}
+.pack.sel .radio{border-color:var(--accent)}
+.pack.sel .radio::after{content:"";width:10px;height:10px;border-radius:5px;background:var(--accent)}
+.amount{width:100%;min-height:56px;padding:0 16px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);font:inherit;font-size:17px;font-weight:600;outline:none}
+.pack svg,.pack .price{flex:none}
+.amount{-moz-appearance:textfield;appearance:textfield}
+.amount::-webkit-outer-spin-button,.amount::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+textarea.amount{min-height:130px;padding:14px 16px;resize:vertical;font-weight:400;font-size:16px;line-height:1.4}
+.field{display:flex;flex-direction:column;gap:8px}
+.field>span{color:var(--muted);font-size:13px;font-weight:600}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.list .arow{gap:12px;min-height:76px;padding:9px 16px}
+.athumb{flex:none;width:44px;height:58px;border-radius:10px;background-size:cover;background-position:center}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper button{width:48px;height:48px;border-radius:24px;background:var(--surface2);border:1px solid var(--line);font-size:22px;font-weight:600;text-align:center}
+.stepper b{font-size:20px;min-width:24px;text-align:center}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:44px;height:44px;border-radius:22px;border:2px solid transparent}
+.sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--bg) inset}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;padding:0 16px;border:1px solid var(--line);border-radius:18px;background:var(--surface);width:100%}
+.knob{flex:none;width:52px;height:32px;border-radius:16px;background:var(--surface2);position:relative;transition:background .15s}
+.knob::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:13px;background:#fff;transition:left .15s}
+.toggle.on .knob{background:var(--accent)}
+.toggle.on .knob::after{left:23px}
+.cover{display:flex;align-items:center;gap:14px;padding:12px;border:1px dashed #6A6A7A;border-radius:18px;background:var(--surface);width:100%}
+.danger{color:#FF9B9B}
+.amount:focus{border-color:var(--accent)}
+.amount::placeholder{color:var(--muted);font-weight:400}
+.price{padding:8px 12px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:14px}
+.list{border-radius:18px;background:var(--surface);overflow:hidden}
+.list button{width:100%;min-height:54px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--surface2)}
+.list button:last-child{border-bottom:0}
+.tabs{position:absolute;left:16px;right:16px;bottom:calc(12px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:6px;border:1px solid var(--line);border-radius:34px;background:rgba(30,30,40,.45)}
+.tab{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.tab{border-radius:28px}
+.tab.on{color:var(--accent);background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.toast{position:fixed;left:16px;right:16px;bottom:108px;max-width:488px;margin:0 auto;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.82);color:#0A0A10;font-weight:600;text-align:center;z-index:5}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<input id="file" type="file" accept="image/*" hidden>
+<input id="cover" type="file" accept="image/*,video/*" hidden>
+<script>
+(function () {
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor('#0A0A10'); tg.setBackgroundColor('#0A0A10'); } catch (e) {} }
+  var tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+
+  // ДЕМО-ДАННЫЕ. Позже этот список будет приходить с сервера (из таблицы templates).
+  var DEFAULTS = [
+    { id: 'cats', cat: 'pets', title: 'Кот снимает кота', price: 20, secs: 8, color: '#5B3DF5', slots: ['Кот, который танцует', 'Кот с телефоном'] },
+    { id: 'dance', cat: 'dance', title: 'Танец из тренда', price: 15, secs: 10, color: '#E0457B', slots: ['Твоё фото в полный рост'] },
+    { id: 'drive', cat: 'pets', title: 'Питомец за рулём', price: 10, secs: 5, color: '#D9622B', slots: ['Фото питомца'] },
+    { id: 'kid', cat: 'family', title: 'Встреча с собой в детстве', price: 20, secs: 8, color: '#1F8A70', slots: ['Ты сейчас', 'Ты в детстве'] },
+    { id: 'walk', cat: 'dance', title: 'Проход по подиуму', price: 15, secs: 8, color: '#2F6FE4', slots: ['Твоё фото в полный рост'] },
+    { id: 'family', cat: 'family', title: 'Семейный танец', price: 30, secs: 10, color: '#8A3FD1', slots: ['Первый участник', 'Второй участник', 'Третий участник'] }
+  ];
+  var CATS = [['all', 'Все'], ['pets', 'Питомцы'], ['dance', 'Танцы'], ['family', 'Семья'], ['other', 'Другое']];
+  var PALETTE = ['#5B3DF5', '#E0457B', '#D9622B', '#1F8A70', '#2F6FE4', '#8A3FD1'];
+
+  // АДМИНКА (демо). Проверка по Telegram ID на странице — только для макета:
+  // в рабочей версии права проверяет сервер.
+  var ADMIN_IDS = [348489675];
+  var isAdmin = !!(tgUser && ADMIN_IDS.indexOf(tgUser.id) !== -1);
+
+  // ДЕМО-ХРАНИЛИЩЕ: шаблоны лежат в памяти этого устройства. Позже — в базе на сервере.
+  var STORE = 'trendsgo_templates_v1';
+  function loadTemplates() {
+    try { var a = JSON.parse(localStorage.getItem(STORE) || 'null'); if (Array.isArray(a)) return a; } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULTS));
+  }
+  function saveTemplates() {
+    try { localStorage.setItem(STORE, JSON.stringify(TEMPLATES)); return true; } catch (e) { return false; }
+  }
+  var TEMPLATES = loadTemplates();
+  function catName(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i][0] === id) return CATS[i][1]; return 'Другое'; }
+  function tileBg(t) { return t.cover ? 'background:#000 url(' + t.cover + ') center/cover' : 'background:' + t.color; }
+  var PACKS = [[100, 'токенов'], [300, 'токенов · выгоднее'], [1000, 'токенов · лучшая цена']];
+
+  var MIN_CUSTOM = 10, MAX_CUSTOM = 100000;
+  var S = { form: null, screen: 'home', cat: 'all', tplId: 'cats', photos: {}, balance: 50, progress: 0, videos: [], toast: '', pack: null, custom: '' };
+  function topupAmount() {
+    if (S.pack === 'custom') { var n = parseInt(S.custom, 10); return n >= MIN_CUSTOM && n <= MAX_CUSTOM ? n : 0; }
+    return Number(S.pack) || 0;
+  }
+  function topupLabel() {
+    var n = topupAmount();
+    if (n) return 'Пополнить на ' + n + ' токенов';
+    return S.pack === 'custom' ? 'Введи сумму от ' + MIN_CUSTOM : 'Выбери сумму пополнения';
+  }
+  var timer = null, toastTimer = null, pendingSlot = null;
+  var app = document.getElementById('app'), fileInput = document.getElementById('file');
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function tpl() { for (var i = 0; i < TEMPLATES.length; i++) if (TEMPLATES[i].id === S.tplId) return TEMPLATES[i]; return TEMPLATES[0]; }
+  function photosLabel(n) { return n + ' фото'; }
+  function filledCount() { var t = tpl(), n = 0; for (var i = 0; i < t.slots.length; i++) if (S.photos[i]) n++; return n; }
+  function ready() { var t = tpl(); return filledCount() === t.slots.length && S.balance >= t.price; }
+
+  var I = {
+    coin: function (s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="8.5" fill="#F2B63C"/><circle cx="9" cy="9" r="5" fill="none" stroke="#8A5A00" stroke-width="1.5"/></svg>'; },
+    play: function (s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#0D0D11" fill-opacity=".55"/><path d="M18 14.5v15l12-7.5z" fill="#F4F4F6"/></svg>'; },
+    back: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 5 7.5 11l6 6"/></svg>',
+    next: '<svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#A3A3B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8.5 5 6 6-6 6"/></svg>',
+    plus: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#C9C9D4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 6v16M6 14h16"/></svg>',
+    check: function (s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 28 28" fill="none" stroke="#10130A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 14.5 5 5 9-11"/></svg>'; },
+    dl: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 17h12"/></svg>',
+    user: function (s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>'; },
+    grid: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>',
+    film: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M10 9v6l5-3z"/></svg>'
+  };
+
+  function home() {
+    var chips = CATS.map(function (c) { return '<button class="chip' + (S.cat === c[0] ? ' on' : '') + '" data-act="cat" data-id="' + c[0] + '">' + c[1] + '</button>'; }).join('');
+    var cards = TEMPLATES.filter(function (t) { return !t.hidden && (S.cat === 'all' || t.cat === S.cat); }).map(function (t) {
+      return '<button class="card" data-act="open" data-id="' + t.id + '">' +
+        '<div class="tile" style="' + tileBg(t) + '">' + I.play(44) +
+        '<div class="badge top">' + t.secs + ' сек</div><div class="badge bottom">превью ролика</div></div>' +
+        '<h3>' + esc(t.title) + '</h3>' +
+        '<div class="meta">' + I.coin(14) + '<b>' + t.price + '</b><span>·</span><span>' + photosLabel(t.slots.length) + '</span></div></button>';
+    }).join('');
+    return '<div class="scroll">' +
+      '<div class="row between"><div class="display" style="font-weight:700;font-size:20px">Trends Go</div>' +
+      '<button class="pill" data-act="go" data-id="profile" aria-label="Баланс токенов, открыть профиль">' + I.coin(18) + '<span>' + S.balance + '</span></button></div>' +
+      '<div><div class="display" style="font-size:24px">Выбери тренд — добавь своё фото</div><div class="muted" style="margin-top:6px">Видео-референс и промт уже готовы.</div></div>' +
+      '<div class="chips">' + chips + '</div>' + (cards ? '<div class="grid">' + cards + '</div>' : '<div class="tip" style="text-align:center;padding:28px 16px">Здесь пока нет шаблонов.</div>') + '</div>' + tabs();
+  }
+
+  function detail() {
+    var t = tpl();
+    var needs = t.slots.map(function (s, i) { return '<div class="need"><div class="num">' + (i + 1) + '</div><div>' + esc(s) + '</div></div>'; }).join('');
+    return '<div class="scroll" style="padding-top:12px;gap:16px">' +
+      '<button class="back" data-act="go" data-id="home">' + I.back + 'Шаблоны</button>' +
+      '<div class="hero" style="' + tileBg(t) + '">' + I.play(64) + '<div class="badge bottom" style="left:12px;bottom:12px;font-size:12px">пример ролика от автора шаблона</div></div>' +
+      '<div><div class="display" style="font-size:22px">' + esc(t.title) + '</div>' +
+      '<div class="tags" style="margin-top:8px"><span>' + t.secs + ' секунд</span><span>' + photosLabel(t.slots.length) + '</span><span>готово за пару минут</span></div></div>' +
+      '<div class="label">Что понадобится</div>' + needs + '</div>' +
+      '<div class="bar"><button class="cta" data-act="go" data-id="upload">Создать за ' + t.price + ' ' + I.coin(18) + '</button></div>';
+  }
+
+  function upload() {
+    var t = tpl();
+    var slots = t.slots.map(function (s, i) {
+      var url = S.photos[i];
+      return '<button class="slot' + (url ? ' on' : '') + '" data-act="pick" data-id="' + i + '">' +
+        '<div class="thumb"' + (url ? ' style="background-image:url(' + url + ')"' : '') + '>' + (url ? '' : I.plus) + '</div>' +
+        '<div><div class="muted" style="font-size:13px">Фото ' + (i + 1) + '</div><div style="font-weight:600;font-size:16px">' + esc(s) + '</div>' +
+        '<div style="font-size:13px;color:' + (url ? 'var(--accent)' : 'var(--muted)') + '">' + (url ? 'Добавлено · нажми, чтобы заменить' : 'Нажми, чтобы выбрать из галереи') + '</div></div></button>';
+    }).join('');
+    var hint = S.balance < t.price ? 'не хватает токенов' : (ready() ? 'всё готово' : 'добавь все фото');
+    return '<div class="scroll" style="padding-top:12px;gap:16px">' +
+      '<button class="back" data-act="go" data-id="detail">' + I.back + 'Назад</button>' +
+      '<div><div class="display" style="font-size:22px">Добавь фото</div><div class="muted" style="margin-top:6px">' + esc(t.title) + ' · добавлено ' + filledCount() + ' из ' + t.slots.length + '</div></div>' +
+      slots + '<div class="tip">Лучше всего получается, когда персонаж виден целиком, при хорошем свете и без посторонних в кадре.</div></div>' +
+      '<div class="bar"><div class="row between muted" style="font-size:14px"><span>Спишется ' + t.price + ' · на балансе ' + S.balance + '</span><span>' + hint + '</span></div>' +
+      '<button class="cta' + (ready() ? '' : ' off') + '" data-act="generate">Сгенерировать</button></div>';
+  }
+
+  function generating() {
+    var t = tpl();
+    return '<div class="center"><div class="poster" style="' + tileBg(t) + '"><i id="pfill" style="height:' + S.progress + '%"></i></div>' +
+      '<div><div class="display" style="font-size:22px">Видео создаётся</div><div class="muted" style="margin-top:8px">' + esc(t.title) + '</div></div>' +
+      '<div style="width:100%"><div class="progress"><i id="pbar" style="width:' + S.progress + '%"></i></div><div id="pnum" style="font-weight:600;margin-top:8px">' + S.progress + '%</div></div>' +
+      '<div class="muted" style="font-size:14px;max-width:290px">Обычно это занимает пару минут. Приложение можно закрыть — бот пришлёт сообщение, когда видео будет готово.</div></div>';
+  }
+
+  function done() {
+    return '<div class="center"><div class="ok">' + I.check(44) + '</div>' +
+      '<div><div class="display" style="font-size:24px">Поздравляем, видео создано</div><div class="muted" style="margin:8px auto 0;max-width:290px">Оно уже в разделе «Мои видео» — там его можно посмотреть и скачать.</div></div>' +
+      '<div style="width:100%;display:flex;flex-direction:column;gap:10px"><button class="cta" data-act="go" data-id="videos">Перейти в «Мои видео»</button>' +
+      '<button class="ghost" data-act="go" data-id="home">Сделать ещё одно</button></div>' +
+      '<div class="muted" style="font-size:14px">Осталось токенов: ' + S.balance + '</div></div>';
+  }
+
+  function videos() {
+    var body;
+    if (!S.videos.length) {
+      body = '<div class="tip" style="text-align:center;padding:28px 16px">Здесь появятся твои готовые видео.</div>';
+    } else {
+      body = '<div class="grid">' + S.videos.map(function (v) {
+        return '<div class="card"><div class="tile" style="' + v.bg + '">' + I.play(44) + '<div class="badge bottom">твоё видео</div></div>' +
+          '<div class="row between" style="padding:0 12px;gap:8px"><div style="min-width:0"><div style="font-weight:600;font-size:14px;line-height:1.25">' + esc(v.title) + '</div><div class="muted" style="font-size:12px">' + v.when + '</div></div>' +
+          '<button class="dl" data-act="download" aria-label="Скачать видео">' + I.dl + '</button></div></div>';
+      }).join('') + '</div>';
+    }
+    return '<div class="scroll"><div class="row between" style="align-items:baseline"><div class="display" style="font-size:24px">Мои видео</div><div class="muted">' + S.videos.length + '</div></div>' +
+      body + '<button class="dashed" data-act="go" data-id="home">Создать новое видео</button></div>' + tabs();
+  }
+
+  function profile() {
+    var name = tgUser ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') : 'Гость';
+    var id = tgUser ? tgUser.id : '—';
+    var packs = PACKS.map(function (p) {
+      var sel = String(S.pack) === String(p[0]);
+      return '<button class="pack' + (sel ? ' sel' : '') + '" data-act="pack" data-id="' + p[0] + '" aria-pressed="' + sel + '"><span class="row" style="gap:10px"><span class="radio"></span>' + I.coin(20) +
+        '<span style="font-weight:700;font-size:17px">' + p[0] + '</span><span class="muted" style="font-size:13px">' + p[1] + '</span></span><span class="price">[ЦЕНА]</span></button>';
+    }).join('');
+    var isCustom = S.pack === 'custom';
+    packs += '<button class="pack' + (isCustom ? ' sel' : '') + '" data-act="pack" data-id="custom" aria-pressed="' + isCustom + '"><span class="row" style="gap:10px"><span class="radio"></span>' +
+      '<span style="font-weight:700;font-size:17px">Своя сумма</span></span><span class="muted" style="font-size:13px">от ' + MIN_CUSTOM + ' токенов</span></button>';
+    if (isCustom) packs += '<input class="amount" id="custom" type="number" inputmode="numeric" min="' + MIN_CUSTOM + '" placeholder="Сколько токенов нужно?" aria-label="Количество токенов" value="' + esc(S.custom) + '">';
+    packs += '<button class="cta' + (topupAmount() ? '' : ' off') + '" id="topup" data-act="topup">' + topupLabel() + '</button>';
+    return '<div class="scroll"><div class="row" style="gap:14px"><div class="avatar" style="color:#C9C9D4">' + I.user(26) + '</div>' +
+      '<div><div style="font-weight:700;font-size:18px">' + esc(name) + '</div><div class="muted" style="font-size:13px">ID: ' + esc(id) + '</div></div></div>' +
+      '<div class="balance"><div class="muted" style="font-size:14px">Баланс</div><div class="row" style="gap:10px">' + I.coin(34) +
+      '<div class="display" style="font-weight:700;font-size:38px">' + S.balance + '</div><div class="muted" style="align-self:flex-end;padding-bottom:8px">токенов</div></div>' +
+      '<div class="muted" style="font-size:13px">Создано видео: ' + S.videos.length + '</div></div>' +
+      '<div class="label">Пополнить</div>' + packs +
+      '<div class="list">' + (isAdmin ? '<button data-act="go" data-id="admin">Админка: шаблоны' + I.next + '</button>' : '') + '<button data-act="soon">История операций' + I.next + '</button><button data-act="soon">Поддержка' + I.next + '</button><button data-act="soon">Правила сервиса' + I.next + '</button></div></div>' + tabs();
+  }
+
+  function tabs() {
+    function tab(id, icon, label) { return '<button class="tab' + (S.screen === id ? ' on' : '') + '" data-act="go" data-id="' + id + '">' + icon + label + '</button>'; }
+    return '<nav class="tabs">' + tab('home', I.grid, 'Шаблоны') + tab('videos', I.film, 'Мои видео') + tab('profile', I.user(24), 'Профиль') + '</nav>';
+  }
+
+
+  function admin() {
+    if (!isAdmin) return profile();
+    var rows = TEMPLATES.map(function (t) {
+      return '<button class="arow" data-act="aedit" data-id="' + esc(t.id) + '"><span class="athumb" style="' + tileBg(t) + '"></span>' +
+        '<span style="flex:1;min-width:0"><span style="display:block;font-weight:600">' + esc(t.title) + '</span>' +
+        '<span class="muted" style="font-size:13px">' + t.price + ' токенов · ' + photosLabel(t.slots.length) + ' · ' + catName(t.cat) + (t.hidden ? ' · скрыт' : '') + '</span></span>' + I.next + '</button>';
+    }).join('');
+    return '<div class="scroll" style="padding-top:12px;gap:16px">' +
+      '<button class="back" data-act="go" data-id="profile">' + I.back + 'Профиль</button>' +
+      '<div><div class="display" style="font-size:22px">Шаблоны</div><div class="muted" style="margin-top:6px">Всего: ' + TEMPLATES.length + '. Пока сохраняются только на этом устройстве.</div></div>' +
+      (rows ? '<div class="list">' + rows + '</div>' : '<div class="tip" style="text-align:center;padding:28px 16px">Шаблонов нет. Добавь первый.</div>') +
+      '<button class="ghost" data-act="areset">Вернуть демо-шаблоны</button></div>' +
+      '<div class="bar"><button class="cta" data-act="anew">Добавить шаблон</button></div>';
+  }
+
+  function adminEdit() {
+    if (!isAdmin || !S.form) return profile();
+    var f = S.form;
+    var cats = CATS.slice(1).map(function (c) { return '<button class="chip' + (f.cat === c[0] ? ' on' : '') + '" data-act="fcat" data-id="' + c[0] + '">' + c[1] + '</button>'; }).join('');
+    var slots = f.slots.map(function (v, i) { return '<input class="amount" data-slot="' + i + '" maxlength="60" placeholder="Подпись к фото ' + (i + 1) + '" aria-label="Подпись к фото ' + (i + 1) + '" value="' + esc(v) + '">'; }).join('');
+    var sws = PALETTE.map(function (c) { return '<button class="sw' + (f.color === c ? ' on' : '') + '" data-act="fcolor" data-id="' + c + '" style="background:' + c + '" aria-label="Цвет ' + c + '"></button>'; }).join('');
+    return '<div class="scroll" style="padding-top:12px;gap:18px">' +
+      '<button class="back" data-act="go" data-id="admin">' + I.back + 'Шаблоны</button>' +
+      '<div class="display" style="font-size:22px">' + (f.id ? 'Редактирование' : 'Новый шаблон') + '</div>' +
+      '<label class="field"><span>Название</span><input class="amount" data-f="title" maxlength="60" placeholder="Например, Кот снимает кота" value="' + esc(f.title) + '"></label>' +
+      '<div class="field"><span>Категория</span><div class="chips">' + cats + '</div></div>' +
+      '<div class="two"><label class="field"><span>Цена, токенов</span><input class="amount" data-f="price" type="number" inputmode="numeric" min="1" value="' + esc(f.price) + '"></label>' +
+      '<label class="field"><span>Длина, секунд</span><input class="amount" data-f="secs" type="number" inputmode="numeric" min="1" value="' + esc(f.secs) + '"></label></div>' +
+      '<div class="field"><span>Сколько фото загружает пользователь</span><div class="stepper"><button data-act="fslots" data-id="-1" aria-label="Меньше фото">−</button><b>' + f.slots.length + '</b><button data-act="fslots" data-id="1" aria-label="Больше фото">+</button></div></div>' +
+      '<div class="field"><span>Подписи к фото — их видит пользователь</span>' + slots + '</div>' +
+      '<div class="field"><span>Обложка на витрине</span><button class="cover" data-act="fcover"><span class="athumb" style="' + tileBg(f) + '"></span>' +
+      '<span><span style="display:block;font-weight:600">' + (f.cover ? 'Заменить обложку' : 'Выбрать фото или видео') + '</span><span class="muted" style="font-size:13px">Из видео берётся первый кадр</span></span></button>' +
+      (f.cover ? '<button class="ghost" data-act="fcoverdel">Убрать обложку</button>' : '<div class="swatches">' + sws + '</div>') + '</div>' +
+      '<label class="field"><span>Промт — пользователь его не видит</span><textarea class="amount" data-f="prompt" placeholder="Опиши сцену для генерации">' + esc(f.prompt) + '</textarea></label>' +
+      '<button class="toggle' + (f.hidden ? '' : ' on') + '" data-act="fhidden" aria-pressed="' + !f.hidden + '"><span style="font-weight:600">Показывать на главной</span><span class="knob"></span></button>' +
+      (f.id ? '<button class="ghost danger" data-act="adel">Удалить шаблон</button>' : '') + '</div>' +
+      '<div class="bar"><button class="cta" data-act="asave">Сохранить</button></div>';
+  }
+
+  function openForm(t) {
+    S.form = t ? { id: t.id, title: t.title, cat: t.cat, price: String(t.price), secs: String(t.secs), slots: t.slots.slice(), color: t.color, cover: t.cover || '', prompt: t.prompt || '', hidden: !!t.hidden }
+               : { id: null, title: '', cat: 'other', price: '10', secs: '8', slots: ['Твоё фото'], color: PALETTE[0], cover: '', prompt: '', hidden: false };
+    S.screen = 'adminEdit'; render();
+  }
+
+  function saveForm() {
+    var f = S.form, title = f.title.trim(), price = parseInt(f.price, 10), secs = parseInt(f.secs, 10);
+    if (!title) return toast('Введи название');
+    if (!(price >= 1)) return toast('Цена должна быть от 1 токена');
+    if (!(secs >= 1)) return toast('Укажи длину ролика');
+    var slots = f.slots.map(function (v, i) { return v.trim() || 'Фото ' + (i + 1); });
+    var t = { id: f.id || 't' + Date.now(), cat: f.cat, title: title, price: price, secs: secs, color: f.color, slots: slots, prompt: f.prompt.trim(), hidden: f.hidden, cover: f.cover };
+    var old = TEMPLATES.slice(), i, found = false;
+    for (i = 0; i < TEMPLATES.length; i++) if (TEMPLATES[i].id === t.id) { TEMPLATES[i] = t; found = true; }
+    if (!found) TEMPLATES.unshift(t);
+    if (!saveTemplates()) { TEMPLATES = old; return toast('Не удалось сохранить: память устройства заполнена'); }
+    S.form = null; S.screen = 'admin'; toast('Шаблон сохранён');
+  }
+
+  function ask(text, yes) {
+    if (tg && tg.showConfirm) { try { tg.showConfirm(text, function (ok) { if (ok) yes(); }); return; } catch (e) {} }
+    if (window.confirm(text)) yes();
+  }
+
+  // Обложка: уменьшаем картинку (или первый кадр видео), чтобы она поместилась в память устройства.
+  function makeCover(file, done) {
+    var url = URL.createObjectURL(file), finished = false;
+    function finish(src, w, h) {
+      if (finished) return; finished = true;
+      var out = '';
+      try {
+        var k = Math.min(1, 360 / w), c = document.createElement('canvas');
+        c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+        out = c.toDataURL('image/jpeg', 0.72);
+      } catch (e) {}
+      URL.revokeObjectURL(url); done(out);
+    }
+    function fail() { if (finished) return; finished = true; URL.revokeObjectURL(url); done(''); }
+    if (file.type.indexOf('video') === 0) {
+      var v = document.createElement('video');
+      v.muted = true; v.playsInline = true; v.preload = 'auto';
+      v.onloadeddata = function () { try { v.currentTime = Math.min(0.3, (v.duration || 1) / 2); } catch (e) { fail(); } };
+      v.onseeked = function () { finish(v, v.videoWidth, v.videoHeight); };
+      v.onerror = fail; v.src = url;
+    } else {
+      var img = new Image();
+      img.onload = function () { finish(img, img.naturalWidth, img.naturalHeight); };
+      img.onerror = fail; img.src = url;
+    }
+    setTimeout(fail, 8000);
+  }
+
+  var SCREENS = { admin: admin, adminEdit: adminEdit, home: home, detail: detail, upload: upload, generating: generating, done: done, videos: videos, profile: profile };
+  var lastScreen = null;
+  function render() {
+    // На том же экране сохраняем прокрутку, чтобы форма не прыгала наверх при каждом нажатии.
+    var sc = app.querySelector('.scroll'), top = sc && lastScreen === S.screen ? sc.scrollTop : 0;
+    app.innerHTML = SCREENS[S.screen]();
+    lastScreen = S.screen;
+    sc = app.querySelector('.scroll'); if (sc && top) sc.scrollTop = top;
+  }
+  // Уведомление живёт отдельно от экрана и не перерисовывает его (не сбивает ввод в полях).
+  var toastEl = document.getElementById('toast');
+  function toast(msg) { render(); toastEl.textContent = msg; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2200); }
+  function haptic() { try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred('light'); } catch (e) {} }
+
+  function generate() {
+    if (!ready()) { toast(S.balance < tpl().price ? 'Не хватает токенов' : 'Сначала добавь все фото'); return; }
+    var t = tpl();
+    S.screen = 'generating'; S.progress = 0; render();
+    clearInterval(timer);
+    // ДЕМО: имитация генерации. Позже здесь будет запрос к серверу.
+    timer = setInterval(function () {
+      S.progress += 4;
+      if (S.progress >= 100) {
+        clearInterval(timer);
+        S.balance -= t.price;
+        S.videos.unshift({ title: t.title, when: 'только что', bg: tileBg(t) });
+        S.photos = {}; S.screen = 'done'; render();
+        try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
+        return;
+      }
+      var bar = document.getElementById('pbar'), num = document.getElementById('pnum'), fill = document.getElementById('pfill');
+      if (bar) bar.style.width = S.progress + '%';
+      if (num) num.textContent = S.progress + '%';
+      if (fill) fill.style.height = S.progress + '%';
+    }, 150);
+  }
+
+  app.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el) return;
+    var act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
+    haptic();
+    if (act === 'go') { S.screen = id; render(); }
+    else if (act === 'cat') { S.cat = id; render(); }
+    else if (act === 'open') { S.tplId = id; S.photos = {}; S.screen = 'detail'; render(); }
+    else if (act === 'pick') { pendingSlot = Number(id); fileInput.value = ''; fileInput.click(); }
+    else if (act === 'generate') { generate(); }
+    else if (act === 'pack') {
+      S.pack = id; render();
+      if (id === 'custom') { var inp = document.getElementById('custom'); if (inp) inp.focus(); }
+    }
+    else if (act === 'topup') {
+      var n = topupAmount();
+      if (!n) { toast(S.pack === 'custom' ? 'Введи сумму от ' + MIN_CUSTOM + ' токенов' : 'Сначала выбери сумму'); return; }
+      // ДЕМО: здесь будет переход к оплате. Пока токены начисляются сразу.
+      S.balance += n; S.pack = null; S.custom = '';
+      toast('Демо: начислено ' + n + ' токенов');
+    }
+    else if (act === 'download') { toast('Демо: здесь будет скачивание видео'); }
+    else if (act === 'soon') { toast('Раздел появится позже'); }
+    else if (!isAdmin) { return; }
+    else if (act === 'anew') { openForm(null); }
+    else if (act === 'aedit') { for (var i = 0; i < TEMPLATES.length; i++) if (TEMPLATES[i].id === id) openForm(TEMPLATES[i]); }
+    else if (act === 'asave') { saveForm(); }
+    else if (act === 'adel') {
+      ask('Удалить шаблон «' + S.form.title + '»?', function () {
+        TEMPLATES = TEMPLATES.filter(function (t) { return t.id !== S.form.id; });
+        saveTemplates(); S.form = null; S.screen = 'admin'; toast('Шаблон удалён');
+      });
+    }
+    else if (act === 'areset') {
+      ask('Вернуть демо-шаблоны? Твои изменения на этом устройстве пропадут.', function () {
+        try { localStorage.removeItem(STORE); } catch (e) {}
+        TEMPLATES = loadTemplates(); toast('Демо-шаблоны возвращены');
+      });
+    }
+    else if (act === 'fcat') { S.form.cat = id; render(); }
+    else if (act === 'fcolor') { S.form.color = id; render(); }
+    else if (act === 'fhidden') { S.form.hidden = !S.form.hidden; render(); }
+    else if (act === 'fslots') {
+      var n = S.form.slots.length + Number(id);
+      if (n < 1 || n > 4) { toast('От 1 до 4 фото'); return; }
+      if (Number(id) > 0) S.form.slots.push(''); else S.form.slots.pop();
+      render();
+    }
+    else if (act === 'fcover') { coverInput.value = ''; coverInput.click(); }
+    else if (act === 'fcoverdel') { S.form.cover = ''; render(); }
+  });
+
+  // Ввод своей суммы: обновляем только кнопку, без перерисовки экрана, чтобы не терять фокус.
+  app.addEventListener('input', function (e) {
+    var d = e.target.dataset;
+    if (S.form && d.f) { S.form[d.f] = e.target.value; return; }
+    if (S.form && d.slot !== undefined) { S.form.slots[Number(d.slot)] = e.target.value; return; }
+    if (e.target.id !== 'custom') return;
+    S.custom = e.target.value;
+    var btn = document.getElementById('topup');
+    if (btn) { btn.textContent = topupLabel(); btn.classList.toggle('off', !topupAmount()); }
+  });
+
+  var coverInput = document.getElementById('cover');
+  coverInput.addEventListener('change', function () {
+    var f = coverInput.files && coverInput.files[0];
+    if (!f || !S.form) return;
+    makeCover(f, function (data) {
+      if (!S.form) return;
+      if (!data) { toast('Не получилось прочитать файл, попробуй другой'); return; }
+      S.form.cover = data; render();
+    });
+  });
+
+  fileInput.addEventListener('change', function () {
+    var f = fileInput.files && fileInput.files[0];
+    if (f && pendingSlot !== null) { S.photos[pendingSlot] = URL.createObjectURL(f); render(); }
+    pendingSlot = null;
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
